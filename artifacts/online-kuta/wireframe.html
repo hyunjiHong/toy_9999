@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframe: 온라인 커타 (online-kuta)</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --w-bg: #f5f5f5;
+    --w-border: #ccc;
+    --w-text: #555;
+    --w-muted: #aaa;
+    --w-fill: #eee;
+  }
+
+  * {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--w-text);
+  }
+
+  body { background: var(--w-bg); }
+
+  /* Screen nav */
+  nav { position: sticky; top: 0; z-index: 40; background: var(--w-bg); border-bottom: 1px solid var(--w-border); }
+  nav button { cursor: pointer; font-size: 13px; }
+  nav button:hover { background: var(--w-fill); border-radius: 4px; }
+  nav button.active { font-weight: bold; border-bottom: 2px solid var(--w-text); }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Viewport toggle */
+  .vp-toggle button {
+    font-size: 12px; padding: 2px 8px;
+    border: 1px solid var(--w-border); cursor: pointer; background: white;
+  }
+  .vp-toggle button:first-child { border-radius: 4px 0 0 4px; }
+  .vp-toggle button:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+  .vp-toggle button.active { background: var(--w-text); color: white; }
+
+  /* Mobile viewport frame */
+  body.viewport-mobile .screen-content {
+    max-width: 375px !important;
+    margin: 24px auto !important;
+    border: 2px solid var(--w-border);
+    border-radius: 24px;
+    min-height: 667px;
+    background: white;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 32px 16px !important;
+  }
+
+  /* Screen Notes */
+  .screen-notes {
+    background: #fffde7;
+    border-left: 3px solid #ffd54f;
+    padding: 12px 16px;
+    margin-top: 24px;
+    font-size: 13px;
+    border-radius: 0 4px 4px 0;
+  }
+  .screen-notes summary {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    color: #b0a050;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .screen-notes p { margin: 6px 0 2px; color: #777; }
+  .screen-notes ul { margin: 4px 0 0 16px; padding: 0; color: #777; }
+  .screen-notes li { margin: 2px 0; }
+
+  /* ── Wireframe helpers (w- prefix) ── */
+  /* 픽셀 아바타 placeholder */
+  .w-avatar {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; width: 64px;
+  }
+  .w-avatar .w-pixel {
+    width: 40px; height: 40px;
+    border: 1px solid var(--w-border);
+    background: var(--w-fill);
+    display: flex; align-items: center; justify-content: center;
+    /* 픽셀 느낌 강조용 계단형 모서리 */
+    image-rendering: pixelated;
+  }
+  .w-avatar.w-me .w-pixel { border: 2px solid var(--w-text); }
+  .w-avatar .w-name { font-size: 11px; text-align: center; line-height: 1.1; }
+  .w-avatar .w-cup {
+    font-size: 10px; color: var(--w-muted);
+    display: flex; align-items: center; gap: 2px;
+  }
+
+  /* 큰 커피 */
+  .w-bigcoffee {
+    border: 2px dashed var(--w-border);
+    border-radius: 50%;
+    width: 120px; height: 120px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; background: var(--w-fill);
+    margin: 0 auto;
+  }
+
+  /* 음료 선택 칩 */
+  .w-drink {
+    border: 1px solid var(--w-border);
+    background: white;
+    border-radius: 8px;
+    padding: 10px 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 12px; cursor: pointer;
+  }
+  .w-drink.w-selected { border: 2px solid var(--w-text); background: var(--w-fill); font-weight: bold; }
+
+  /* 떠오르는 채팅 (투명 배경, 글자만 커피 장면 위로) */
+  .w-chat-float {
+    background: transparent;
+    font-size: 12px;
+    line-height: 1.4;
+    /* 흰 장면 위에서도 읽히도록 얇은 외곽선 */
+    text-shadow: 0 0 2px white, 0 0 3px white;
+    align-self: flex-start;
+  }
+  .w-chat-float .w-chat-name { color: var(--w-muted); }
+  .w-chat-float.w-chat-old { opacity: 0.45; }   /* 오래된 메시지는 옅어지며 사라짐 */
+  .w-chat-float.w-chat-mine { font-weight: bold; align-self: flex-end; }
+</style>
+</head>
+<body class="p-0 m-0 viewport-mobile">
+
+<nav class="flex items-center gap-4 px-6 py-2">
+  <span class="text-xs" style="color:var(--w-muted)">wireframe · 온라인 커타</span>
+  <button id="nav-0" onclick="show(0)" class="px-2 py-1">입장</button>
+  <button id="nav-1" onclick="show(1)" class="px-2 py-1">커타 존</button>
+  <button id="nav-2" onclick="show(2)" class="px-2 py-1">종료</button>
+  <div class="vp-toggle flex ml-auto">
+    <button id="vp-desktop" onclick="setViewport('desktop')">Desktop</button>
+    <button id="vp-mobile" onclick="setViewport('mobile')" class="active">Mobile</button>
+  </div>
+</nav>
+
+<!-- ══════════════ 화면 0: 입장 ══════════════ -->
+<div id="screen-0" class="screen" data-scenario="scenario-A">
+  <div class="screen-content @container max-w-md mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      입장 화면
+    </h2>
+
+    <div class="text-center mb-6">
+      <div class="w-bigcoffee mb-3" style="width:80px;height:80px;">
+        <i data-lucide="coffee" style="width:28px;height:28px;"></i>
+      </div>
+      <div class="text-base font-bold">☕ 팀 커타방</div>
+      <div class="text-xs mt-1" style="color:var(--w-muted)">링크로 초대된 방 · 이름만 넣고 참여하세요</div>
+    </div>
+
+    <!-- 이름 -->
+    <label class="block text-xs mb-1" style="color:var(--w-muted)">이름</label>
+    <input type="text" placeholder="이름을 입력하세요"
+      class="w-full mb-5 px-3 py-2 rounded-lg text-sm"
+      style="border:1px solid var(--w-border); background:white;">
+
+    <!-- 음료 선택 -->
+    <label class="block text-xs mb-2" style="color:var(--w-muted)">오늘 마실 음료</label>
+    <div class="grid grid-cols-3 gap-2 mb-5">
+      <div class="w-drink w-selected"><i data-lucide="coffee" style="width:18px;height:18px;"></i>라떼</div>
+      <div class="w-drink"><i data-lucide="coffee" style="width:18px;height:18px;"></i>아메리카노</div>
+      <div class="w-drink"><i data-lucide="coffee" style="width:18px;height:18px;"></i>카푸치노</div>
+      <div class="w-drink"><i data-lucide="cup-soda" style="width:18px;height:18px;"></i>아이스</div>
+      <div class="w-drink"><i data-lucide="leaf" style="width:18px;height:18px;"></i>차</div>
+    </div>
+
+    <!-- 내 아바타 미리보기 -->
+    <div class="flex items-center gap-3 mb-6 p-3 rounded-lg" style="background:var(--w-fill);">
+      <div class="w-avatar w-me">
+        <div class="w-pixel"><i data-lucide="user" style="width:20px;height:20px;"></i></div>
+      </div>
+      <div class="text-xs" style="color:var(--w-muted)">
+        <div>내 아바타 미리보기</div>
+        <div class="mt-1" style="color:var(--w-text)">라떼 컵을 들고 있어요</div>
+      </div>
+    </div>
+
+    <button class="w-full py-3 rounded-lg text-sm font-bold"
+      style="background:var(--w-text); color:white;">
+      커타 참여
+    </button>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <p>링크를 받은 사람이 이름·음료를 정하고 커타에 들어가는 관문 화면.</p>
+        <ul>
+          <li>트리거: 초대 링크 접속 시 첫 화면으로 진입</li>
+          <li>인터랙션: 이름 입력 / 음료 칩 1개 선택(선택 시 미리보기 컵 반영) / "커타 참여" 클릭</li>
+          <li>전환: "커타 참여" → 커타 존 화면으로 이동, 내 아바타가 큰 커피 쪽에 등장</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ 화면 1: 커타 존 (메인 + 채팅 통합) ══════════════ -->
+<div id="screen-1" class="screen" data-scenario="scenario-B">
+  <div class="screen-content @container max-w-5xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      커타 존 (메인 + 채팅)
+    </h2>
+
+    <!-- 상단 바: 타이머 / 인원 / 나가기 -->
+    <div class="flex items-center justify-between mb-3 px-3 py-2 rounded-lg" style="border:1px solid var(--w-border); background:white;">
+      <div class="flex items-center gap-1 text-sm font-bold">
+        <i data-lucide="clock" style="width:16px;height:16px;"></i> 09:32
+      </div>
+      <div class="flex items-center gap-1 text-xs" style="color:var(--w-muted)">
+        <i data-lucide="users" style="width:14px;height:14px;"></i> 3 / 8
+      </div>
+      <button class="flex items-center gap-1 text-xs px-2 py-1 rounded" style="border:1px solid var(--w-border);">
+        <i data-lucide="log-out" style="width:14px;height:14px;"></i> 나가기
+      </button>
+    </div>
+
+    <!-- 오늘의 질문 배너 -->
+    <div class="mb-4 px-3 py-2 rounded-lg text-xs" style="border:1px dashed var(--w-border); background:var(--w-fill);">
+      <span style="color:var(--w-muted)">오늘의 커타 질문 —</span>
+      <span class="font-bold">요즘 제일 아까운 지출은?</span>
+    </div>
+
+    <!-- 커피 존 (채팅이 이 장면 위로 떠오름) -->
+    <div class="relative rounded-lg p-4 overflow-hidden" style="border:1px solid var(--w-border); background:white; min-height:340px;">
+      <div class="w-bigcoffee mb-4">
+        <i data-lucide="coffee" style="width:36px;height:36px;"></i>
+        <span class="text-xs" style="color:var(--w-muted)">큰 커피</span>
+      </div>
+      <div class="flex flex-wrap justify-center gap-4">
+        <div class="w-avatar w-me">
+          <div class="w-pixel"><i data-lucide="user" style="width:20px;height:20px;"></i></div>
+          <div class="w-name">민지 (나)</div>
+          <div class="w-cup"><i data-lucide="coffee" style="width:10px;height:10px;"></i>라떼</div>
+        </div>
+        <div class="w-avatar">
+          <div class="w-pixel"><i data-lucide="user" style="width:20px;height:20px;"></i></div>
+          <div class="w-name">지훈</div>
+          <div class="w-cup"><i data-lucide="coffee" style="width:10px;height:10px;"></i>아메리카노</div>
+        </div>
+        <div class="w-avatar">
+          <div class="w-pixel"><i data-lucide="user" style="width:20px;height:20px;"></i></div>
+          <div class="w-name">서연</div>
+          <div class="w-cup"><i data-lucide="cup-soda" style="width:10px;height:10px;"></i>아이스</div>
+        </div>
+      </div>
+
+      <!-- 떠오르는 채팅 오버레이: 투명 배경 · 글자만 · 최신이 아래, 오래된 건 옅어짐 -->
+      <div class="absolute inset-x-0 bottom-3 px-4 flex flex-col gap-1 pointer-events-none">
+        <div class="w-chat-float w-chat-old"><span class="w-chat-name">지훈</span> 다들 모였네 ☕</div>
+        <div class="w-chat-float"><span class="w-chat-name">서연</span> 점심 뭐 먹음?</div>
+        <div class="w-chat-float w-chat-mine">나는 김밥 ㅋㅋ <span class="w-chat-name">:민지(나)</span></div>
+      </div>
+    </div>
+
+    <!-- 하단 채팅 입력 바 (항상 보임) → 입력하면 위 장면으로 글자가 떠오름 -->
+    <div class="flex gap-2 mt-3">
+      <input type="text" placeholder="채팅 입력…"
+        class="flex-1 px-3 py-2 rounded-lg text-sm" style="border:1px solid var(--w-border); background:white;">
+      <button class="px-3 rounded-lg" style="background:var(--w-text);">
+        <i data-lucide="send" style="width:16px;height:16px; color:white;"></i>
+      </button>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <p>커타의 핵심 화면. 큰 커피 주위에 모인 참여자 아바타 위로 채팅 글자가 떠오른다.</p>
+        <ul>
+          <li>트리거: 입장 화면에서 "커타 참여" 후 진입 / 진행 중인 커타에 합류 시</li>
+          <li>인터랙션: 하단 입력 바에 채팅 입력·전송 → 글자가 장면 위로 떠오름 / 상단 남은 시간·인원 확인 / 아바타는 접속·이탈에 따라 실시간 등장·사라짐</li>
+          <li>전환: 남은 시간 0 → 종료 화면 / "나가기" → 입장 화면(재입장 가능)</li>
+        </ul>
+        <p style="color:#b0a050;">배치 결정: 채팅은 별도 패널이 아니라 커피 장면 위 오버레이(투명 배경, 글자만). 하단엔 입력 바만 고정. 최신 메시지가 아래에 뜨고 오래된 건 옅어지며 사라진다. 모바일·데스크톱 동일 구조(장면 크기만 반응형).</p>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ 화면 2: 커타 종료 ══════════════ -->
+<div id="screen-2" class="screen" data-scenario="scenario-C">
+  <div class="screen-content @container max-w-md mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      커타 종료 안내
+    </h2>
+
+    <div class="text-center py-8">
+      <div class="w-bigcoffee mb-4" style="opacity:0.5;">
+        <i data-lucide="coffee" style="width:36px;height:36px;"></i>
+      </div>
+      <div class="text-lg font-bold mb-2">커타가 끝났어요 ☕</div>
+      <div class="text-xs" style="color:var(--w-muted)">10분 커타 종료 · 3명이 함께했어요</div>
+
+      <!-- 함께한 사람 -->
+      <div class="flex flex-wrap justify-center gap-3 my-6">
+        <div class="w-avatar"><div class="w-pixel"><i data-lucide="user" style="width:18px;height:18px;"></i></div><div class="w-name">민지</div></div>
+        <div class="w-avatar"><div class="w-pixel"><i data-lucide="user" style="width:18px;height:18px;"></i></div><div class="w-name">지훈</div></div>
+        <div class="w-avatar"><div class="w-pixel"><i data-lucide="user" style="width:18px;height:18px;"></i></div><div class="w-name">서연</div></div>
+      </div>
+
+      <button class="w-full py-3 rounded-lg text-sm font-bold mb-2"
+        style="background:var(--w-text); color:white;">
+        다시 참여하기
+      </button>
+      <div class="text-xs" style="color:var(--w-muted)">이제 다시 일하러 가볼까요 👋</div>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <p>타이머가 0이 되면 모두에게 동시에 뜨는 마무리 화면. 억지로 붙잡지 않고 자연스럽게 끝낸다.</p>
+        <ul>
+          <li>트리거: 커타 존에서 남은 시간이 00:00에 도달</li>
+          <li>인터랙션: 함께한 사람 확인 / "다시 참여하기" 클릭</li>
+          <li>전환: "다시 참여하기" → 입장 화면으로 이동(이름·음료 재선택)</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var currentScreen = 0;
+var screenIds = [];
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('nav button[id^="nav-"]').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('nav-' + id).classList.add('active');
+  currentScreen = screenIds.indexOf(id);
+}
+
+function setViewport(mode) {
+  document.body.classList.remove('viewport-mobile', 'viewport-desktop');
+  document.body.classList.add('viewport-' + mode);
+  document.querySelectorAll('.vp-toggle button').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('vp-' + mode).classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('nav button[id^="nav-"]').forEach(function(b) {
+    screenIds.push(parseInt(b.id.replace('nav-', '')));
+  });
+  var first = document.querySelector('nav button[id^="nav-"]');
+  if (first) first.click();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>

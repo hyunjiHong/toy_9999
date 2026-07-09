@@ -9,7 +9,8 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
     passWithNoTests: true,
-    exclude: [".claude/worktrees/**", "node_modules/**"],
+    // Playwright specs live in e2e/*.spec.ts — keep them out of Vitest.
+    exclude: [".claude/worktrees/**", "node_modules/**", "e2e/**"],
   },
   resolve: {
     alias: {
