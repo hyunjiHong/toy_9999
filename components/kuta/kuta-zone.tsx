@@ -3,6 +3,7 @@
 import { Coffee, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MAX_PARTICIPANTS } from "@/config/room";
+import { pickQuestion } from "@/config/questions";
 import { usePresence } from "@/hooks/use-presence";
 import { useMessages } from "@/hooks/use-messages";
 import { useKutaTimer } from "@/hooks/use-kuta-timer";
@@ -12,6 +13,7 @@ import { ChatInput } from "./chat-input";
 import { ChatOverlay } from "./chat-overlay";
 import { EndScreen } from "./end-screen";
 import { KutaTimer } from "./kuta-timer";
+import { QuestionBanner } from "./question-banner";
 
 export function KutaZone({
   roomId,
@@ -24,7 +26,7 @@ export function KutaZone({
 }) {
   const { participants, isFull } = usePresence(roomId, me);
   const { messages, send } = useMessages(roomId);
-  const { remaining, phase, start } = useKutaTimer(roomId);
+  const { session, remaining, phase, start } = useKutaTimer(roomId);
 
   // FR-9 — 방이 가득 참
   if (isFull) {
@@ -74,7 +76,11 @@ export function KutaZone({
 
       {/* 상단 바: 타이머/커타 시작 · 인원 · 나가기 (질문 배너는 T6에서 추가) */}
       <div className="mb-4 flex items-center gap-3 rounded-lg border bg-card px-3 py-2">
-        <KutaTimer remaining={remaining} phase={phase} onStart={() => start()} />
+        <KutaTimer
+          remaining={remaining}
+          phase={phase}
+          onStart={() => start(pickQuestion())}
+        />
         <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
           <Users className="size-4" aria-hidden /> {people.length} / {MAX_PARTICIPANTS}
         </span>
@@ -82,6 +88,9 @@ export function KutaZone({
           <LogOut className="size-4" aria-hidden /> 나가기
         </Button>
       </div>
+
+      {/* 오늘의 커타 질문 (FR-8) — 세션에 저장된 질문을 방 전원이 봄 */}
+      <QuestionBanner question={session?.question ?? null} />
 
       {/* 커피 존 — 큰 커피 주위에 아바타, 채팅이 이 장면 위로 떠오른다 */}
       <div className="relative min-h-80 overflow-hidden rounded-lg border bg-card p-4">
