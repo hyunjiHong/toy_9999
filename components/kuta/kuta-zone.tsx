@@ -1,6 +1,6 @@
 "use client";
 
-import { Coffee, LogOut, Users } from "lucide-react";
+import { LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MAX_PARTICIPANTS } from "@/config/room";
 import { pickQuestion } from "@/config/questions";
@@ -88,9 +88,57 @@ export function KutaZone({
 
       {/* 커피 존 — 큰 커피 주위에 아바타, 채팅이 이 장면 위로 떠오른다 */}
       <div className="relative min-h-80 overflow-hidden rounded-lg border bg-card p-4">
-        <div className="mx-auto mb-4 flex size-28 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed bg-muted">
-          <Coffee className="size-9 text-muted-foreground" aria-hidden />
-          <span className="text-xs text-muted-foreground">큰 커피</span>
+        <div className="mx-auto mb-4 w-fit">
+          <svg
+            width="132"
+            height="122"
+            viewBox="0 0 120 112"
+            role="img"
+            aria-label="큰 커피"
+          >
+            <ellipse cx="58" cy="97" rx="46" ry="9" fill="#E6D6B8" />
+            <rect
+              x="20"
+              y="34"
+              width="76"
+              height="60"
+              rx="10"
+              fill="#FFFFFF"
+              stroke="#DDD3C2"
+              strokeWidth="2"
+            />
+            <path
+              d="M96 46 C 118 50 118 80 96 84"
+              fill="none"
+              stroke="#DDD3C2"
+              strokeWidth="7"
+            />
+            <ellipse cx="58" cy="42" rx="35" ry="8" fill="#6F4E37" />
+            <path
+              d="M46 30 q -4 -6 0 -12 q 4 -6 0 -12"
+              fill="none"
+              stroke="#CBBBA0"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              opacity="0.55"
+            />
+            <path
+              d="M58 27 q -4 -6 0 -12 q 4 -6 0 -12"
+              fill="none"
+              stroke="#CBBBA0"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              opacity="0.55"
+            />
+            <path
+              d="M70 30 q -4 -6 0 -12 q 4 -6 0 -12"
+              fill="none"
+              stroke="#CBBBA0"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              opacity="0.55"
+            />
+          </svg>
         </div>
         <ul className="flex flex-wrap justify-center gap-4">
           {roster.map((p) => (
