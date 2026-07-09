@@ -2,7 +2,23 @@
 
 > spec을 실행 가능한 vertical-slice Task로 쪼갬 (draft-plan 단계)
 > 근거 문서: [spec.md](./spec.md) · [idea.md](./idea.md) · [wireframe.html](./wireframe.html)
-> 상태: 초안 (plan-reviewer 검토 대기) · 최종 수정: 2026-07-09
+> 상태: 구현 완료(T1~T6) · T7(배포)은 사용자 게이트 · 최종 수정: 2026-07-09
+
+## 실행 상태 (execute-plan)
+
+| Task | 상태 | 검증 |
+|---|---|---|
+| T1 Supabase 기반 | ✅ 코드 완료 | 빌드 · 연결 검증은 호스티드 creds 후 |
+| T2 입장 폼 | ✅ 완료 | Vitest (entry-form, room-client) |
+| T3 실시간 참여자 | ✅ 코드 완료 | Vitest(flatten/avatar) · e2e는 creds 후 |
+| T4 실시간 채팅 | ✅ 코드 완료 | Vitest(chat-input/overlay) · e2e는 creds 후 |
+| T5a 세션·타이머 | ✅ 코드 완료 | Vitest(session 순수함수) · e2e는 creds 후 |
+| T5b 예고·종료 | ✅ 코드 완료 | Vitest(end-screen) · e2e는 creds 후 |
+| T6 오늘의 질문 | ✅ 코드 완료 | Vitest(pickQuestion/banner) · e2e는 creds 후 |
+| T7 배포·검증 | ⏳ 사용자 게이트 | 호스티드 Supabase + Vercel + 배포본 시나리오 검증 |
+
+Vitest 30개 통과 · `bun run build` 성공 · 실시간 e2e 6개는 작성 완료(호스티드 creds 없으면 자동 skip).
+
 
 ## 아키텍처 결정
 

@@ -30,6 +30,41 @@ E2E 테스트를 처음 실행하기 전에 Chromium을 설치합니다:
 bunx playwright install chromium
 ```
 
+## 온라인 커타 (앱)
+
+링크 하나로 잠깐 모여 커피 마시듯 수다 떠는 실시간 커타 웹앱. 브라우저가 Supabase에 직접 연결(Realtime Presence + Postgres Changes + DB)하고, Next.js는 Vercel에 배포한다. 스펙·계획은 [`artifacts/online-kuta/`](./artifacts/online-kuta/) 참조.
+
+### 1) Supabase 프로젝트 준비
+
+1. [supabase.com](https://supabase.com)에서 프로젝트 생성
+2. `supabase/migrations/*.sql`을 순서대로 적용 + `supabase/seed.sql` 실행
+   - CLI: `supabase link --project-ref <ref>` 후 `supabase db push`, 그리고 `supabase db seed`(또는 대시보드 SQL Editor에 붙여넣기)
+3. Settings → API 에서 **Project URL**과 **anon key**를 복사해 `.env.local`에 넣는다 (`.env.example` 참고)
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+```
+
+### 2) 로컬 실행 / 테스트
+
+```bash
+bun dev                 # http://localhost:3000 → seed 방으로 입장
+bun run test            # Vitest (단위·UI, Supabase 불필요)
+bunx playwright install chromium
+bun run test:e2e        # 실시간 e2e — .env.local의 Supabase가 있어야 실제로 돌고, 없으면 skip
+```
+
+> 실시간 e2e는 테스트마다 격리된 방을 새로 만들어(익명 rooms insert) 두 브라우저 컨텍스트로 검증한다. Supabase 미설정 시 자동 skip.
+
+### 3) Vercel 배포
+
+Vercel에 저장소를 연결하고 환경변수 `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 동일하게 설정한 뒤 `git push`.
+
+### ⚠️ 보안 모델 (MVP)
+
+계정이 없다(spec: "링크=비밀번호"). anon key는 공개되고, RLS는 anon 읽기/쓰기를 허용하되 클라이언트가 `room_id`(=링크 UUID)로 필터한다. **세션/신원이 없어 서버측 방-범위 제한은 불가** → 링크를 아는 사람이 사실상의 경계다. 완전한 프라이버시가 필요하면 로그인(Supabase Auth) 도입이 필요하다(MVP 밖). 자세한 판단은 [`learnings.md`](./artifacts/online-kuta/learnings.md).
+
 ## 스크립트
 
 | 명령어 | 설명 |
