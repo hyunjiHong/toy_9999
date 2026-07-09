@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { createTestRoom, HAS_SUPABASE, join, seedMessage } from "./helpers";
+import { createTestRoom, HAS_SUPABASE, join } from "./helpers";
 
 // 실시간 채팅 (FR-4 / SC4). 실제 Supabase Postgres Changes.
 // 실행 전제: NEXT_PUBLIC_SUPABASE_* 설정 + 마이그레이션 적용.
@@ -31,29 +31,20 @@ test.describe("실시간 채팅", () => {
     await ctxB.close();
   });
 
-  // 세션 단위 수명 — 새 커타를 시작하면 이전 세션 대화가 사라진다
-  test("새 커타를 시작하면 이전 세션 대화가 화면에서 사라진다", async ({
-    browser,
-  }) => {
+  // 휘발성 — 보낸 메시지는 떠오른 뒤 약 5초 후 화면에서 사라진다 (FR-10)
+  test("보낸 메시지는 잠깐 떠올랐다 사라진다", async ({ browser }) => {
     const roomId = await createTestRoom();
-    await seedMessage(
-      roomId,
-      "옛사람",
-      "지난 커타 얘기",
-      new Date(Date.now() - 3_600_000).toISOString(), // 1시간 전
-    );
-
     const ctx = await browser.newContext();
     const a = await ctx.newPage();
     await join(a, roomId, "민지", "라떼");
 
-    const overlay = a.getByLabel("채팅");
-    // 진행 중인 커타가 없을 땐 이전 대화가 보인다
-    await expect(overlay.getByText("지난 커타 얘기")).toBeVisible({ timeout: 3000 });
+    await a.getByLabel("채팅 입력").fill("잠깐 떠오르는 메시지");
+    await a.getByRole("button", { name: "보내기" }).click();
 
-    // 커타 시작 → 채팅이 이 세션 시작 이후로 한정 → 이전 대화 사라짐
-    await a.getByRole("button", { name: /커타 시작/ }).click();
-    await expect(overlay.getByText("지난 커타 얘기")).toBeHidden({ timeout: 3000 });
+    const overlay = a.getByLabel("채팅");
+    await expect(overlay.getByText(/잠깐 떠오르는 메시지/)).toBeVisible({ timeout: 2000 });
+    // 약 5초 뒤 사라짐
+    await expect(overlay.getByText(/잠깐 떠오르는 메시지/)).toBeHidden({ timeout: 7000 });
 
     await ctx.close();
   });

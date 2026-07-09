@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
-import { fetchRecentMessages, sendMessage } from "@/services/messages";
+import { sendMessage } from "@/services/messages";
 import type { Message } from "@/types/kuta";
 
 export interface MessagesResult {
@@ -10,26 +10,14 @@ export interface MessagesResult {
   send: (senderName: string, content: string) => Promise<void>;
 }
 
-// 방의 채팅을 구독한다. insert(전송) → Postgres Changes로 방 전원에게 2초 내 도착(FR-4).
-// sinceIso(현재 커타 세션 시작 시각)가 바뀌면 목록을 초기화하고 그 이후 메시지만 보인다
-// → 새 커타가 시작되면 이전 세션 대화가 사라진다(세션 단위 수명).
-export function useMessages(
-  roomId: string,
-  sinceIso: string | null = null,
-): MessagesResult {
+// 채팅 구독. 채팅은 휘발성(커피 위로 떠오르다 ~5초 뒤 사라짐)이라 히스토리를 불러오지 않고,
+// 구독 이후 실시간으로 도착하는 메시지만 다룬다 → 늦게 들어온 사람은 이후 대화만 본다(FR-4/FR-10).
+// (mount 시각 대신 "구독 이후 도착"을 기준으로 삼아 클라이언트/서버 시계 오차에 영향받지 않는다.)
+export function useMessages(roomId: string): MessagesResult {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
-    let active = true;
-
-    fetchRecentMessages(roomId, sinceIso)
-      .then((recent) => {
-        if (active) setMessages(recent);
-      })
-      .catch(() => {
-        /* 로드 실패해도 실시간 수신은 계속 */
-      });
 
     const channel = supabase
       .channel(`messages:${roomId}`)
@@ -43,7 +31,6 @@ export function useMessages(
         },
         (payload) => {
           const next = payload.new as Message;
-          if (sinceIso && next.created_at < sinceIso) return; // 이전 세션 메시지는 무시
           setMessages((prev) =>
             prev.some((m) => m.id === next.id) ? prev : [...prev, next],
           );
@@ -52,10 +39,9 @@ export function useMessages(
       .subscribe();
 
     return () => {
-      active = false;
       supabase.removeChannel(channel);
     };
-  }, [roomId, sinceIso]);
+  }, [roomId]);
 
   const send = useCallback(
     async (senderName: string, content: string) => {

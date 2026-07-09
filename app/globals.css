@@ -124,14 +124,20 @@
     @apply bg-background text-foreground;
   }
 }
-/* 커타 채팅: 새 메시지가 아래에서 위로 떠오르는 애니메이션 */
-@keyframes kuta-rise {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
+/* 커타 채팅: 새 메시지가 커피 주변에서 위로 떠오르다 5초 뒤 사라진다 */
+@keyframes kuta-float {
+  0% {
     transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-190px);
+    opacity: 0;
   }
 }

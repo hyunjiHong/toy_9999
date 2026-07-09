@@ -26,8 +26,8 @@ export function KutaZone({
 }) {
   const { participants, isFull, meKey } = usePresence(roomId, me);
   const { session, label, phase, start } = useKutaTimer(roomId);
-  // 채팅을 현재 커타 세션에 한정 → 새 커타가 시작되면 이전 대화가 사라진다.
-  const { messages, send } = useMessages(roomId, session?.started_at ?? null);
+  // 채팅은 휘발성(떠오르다 사라짐). 저장분은 새 커타 시작 시 start()가 정리한다.
+  const { messages, send } = useMessages(roomId);
 
   // FR-9 — 방이 가득 참
   if (isFull) {
