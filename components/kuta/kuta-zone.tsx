@@ -4,8 +4,11 @@ import { Coffee, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MAX_PARTICIPANTS } from "@/config/room";
 import { usePresence } from "@/hooks/use-presence";
+import { useMessages } from "@/hooks/use-messages";
 import type { Participant } from "@/types/kuta";
 import { Avatar } from "./avatar";
+import { ChatInput } from "./chat-input";
+import { ChatOverlay } from "./chat-overlay";
 
 export function KutaZone({
   roomId,
@@ -17,6 +20,7 @@ export function KutaZone({
   onLeave: () => void;
 }) {
   const { participants, isFull } = usePresence(roomId, me);
+  const { messages, send } = useMessages(roomId);
 
   // FR-9 — 방이 가득 참
   if (isFull) {
@@ -58,8 +62,8 @@ export function KutaZone({
         </Button>
       </div>
 
-      {/* 커피 존 — 큰 커피 주위에 참여자 아바타 */}
-      <div className="rounded-lg border bg-card p-4">
+      {/* 커피 존 — 큰 커피 주위에 아바타, 채팅이 이 장면 위로 떠오른다 */}
+      <div className="relative min-h-80 overflow-hidden rounded-lg border bg-card p-4">
         <div className="mx-auto mb-4 flex size-28 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed bg-muted">
           <Coffee className="size-9 text-muted-foreground" aria-hidden />
           <span className="text-xs text-muted-foreground">큰 커피</span>
@@ -71,7 +75,11 @@ export function KutaZone({
             </li>
           ))}
         </ul>
+        <ChatOverlay messages={messages} />
       </div>
+
+      {/* 하단 채팅 입력 바 */}
+      <ChatInput onSend={(text) => send(me.name, text)} />
     </div>
   );
 }
