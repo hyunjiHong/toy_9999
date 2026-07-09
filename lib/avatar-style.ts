@@ -46,16 +46,3 @@ export function avatarColors(name: string): AvatarColors {
     shirt: pick(SHIRTS, h >> 6),
   };
 }
-
-// Kenney CC0 외계인 캐릭터 (public/assets/kuta/). 이름 시드로 하나 배정 → 같은 이름 = 같은 캐릭터.
-export const ALIENS = [
-  "alienBeige",
-  "alienBlue",
-  "alienGreen",
-  "alienPink",
-  "alienYellow",
-];
-
-export function alienSrc(name: string): string {
-  return `/assets/kuta/${ALIENS[hashName(name) % ALIENS.length]}.png`;
-}
