@@ -53,6 +53,12 @@ create policy "messages insertable by anyone"
   to anon, authenticated
   with check (char_length(content) between 1 and 500 and char_length(sender_name) between 1 and 40);
 
+drop policy if exists "messages deletable by anyone" on public.messages;
+create policy "messages deletable by anyone"
+  on public.messages for delete
+  to anon, authenticated
+  using (true);
+
 alter publication supabase_realtime add table public.messages;
 
 -- 0003_kuta_sessions ------------------------------------------

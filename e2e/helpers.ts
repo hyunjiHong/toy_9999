@@ -40,6 +40,23 @@ export async function seedEndingSession(
   if (error) throw error;
 }
 
+// 과거 메시지를 심는다 (세션 단위 수명 테스트용)
+export async function seedMessage(
+  roomId: string,
+  senderName: string,
+  content: string,
+  createdAtIso?: string,
+): Promise<void> {
+  const row: Record<string, unknown> = {
+    room_id: roomId,
+    sender_name: senderName,
+    content,
+  };
+  if (createdAtIso) row.created_at = createdAtIso;
+  const { error } = await db().from("messages").insert(row);
+  if (error) throw error;
+}
+
 export async function join(
   page: Page,
   roomId: string,
