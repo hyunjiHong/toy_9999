@@ -10,6 +10,7 @@ import type { Participant } from "@/types/kuta";
 import { Avatar } from "./avatar";
 import { ChatInput } from "./chat-input";
 import { ChatOverlay } from "./chat-overlay";
+import { EndScreen } from "./end-screen";
 import { KutaTimer } from "./kuta-timer";
 
 export function KutaZone({
@@ -42,6 +43,12 @@ export function KutaZone({
 
   // presence가 아직 비어도(설정 미구성/동기화 전) 최소한 나 자신은 보인다.
   const people = participants.length > 0 ? participants : [me];
+
+  // FR-7 / SC5 — 0초 도달 시 종료 화면. "다시 참여하기" → 입장 화면(onLeave).
+  if (phase === "ended") {
+    return <EndScreen participants={people} onRestart={onLeave} />;
+  }
+
   let meMarked = false;
   const markMe = (p: Participant) => {
     if (!meMarked && p.name === me.name && p.drink === me.drink) {
@@ -54,6 +61,16 @@ export function KutaZone({
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="sr-only">커타 존</h1>
+
+      {/* FR-7 — 종료 30초 전 예고 (모달 대신 비침투 배너) */}
+      {phase === "ending-soon" && (
+        <div
+          role="alert"
+          className="mb-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-center text-sm font-medium text-destructive"
+        >
+          곧 커타가 끝나요 ☕
+        </div>
+      )}
 
       {/* 상단 바: 타이머/커타 시작 · 인원 · 나가기 (질문 배너는 T6에서 추가) */}
       <div className="mb-4 flex items-center gap-3 rounded-lg border bg-card px-3 py-2">

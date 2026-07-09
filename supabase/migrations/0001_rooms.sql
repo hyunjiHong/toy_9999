@@ -15,3 +15,11 @@ create policy "rooms readable by anyone"
   on public.rooms for select
   to anon, authenticated
   using (true);
+
+-- 누구나 새 방(링크)을 만들 수 있다 — "링크=방, 아는 사람끼리" 컨셉의 멀티룸 확장 대비
+-- (plan 미결정: 멀티룸 UI는 후속). e2e가 테스트별 격리 방을 만드는 데도 쓰인다.
+drop policy if exists "rooms insertable by anyone" on public.rooms;
+create policy "rooms insertable by anyone"
+  on public.rooms for insert
+  to anon, authenticated
+  with check (true);
