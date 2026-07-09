@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Coffee, CupSoda, Leaf } from "lucide-react";
+import { Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,14 +14,8 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { DEFAULT_DRINK, DRINKS, drinkLabel } from "@/config/drinks";
-import type { DrinkOption } from "@/config/drinks";
 import type { DrinkId, Participant } from "@/types/kuta";
-
-const DRINK_ICONS: Record<DrinkOption["icon"], typeof Coffee> = {
-  Coffee,
-  CupSoda,
-  Leaf,
-};
+import { DrinkIcon } from "./drink-icon";
 
 export function EntryForm({
   roomName = "팀 커타방",
@@ -79,15 +73,12 @@ export function EntryForm({
                 aria-labelledby="kuta-drink-label"
                 className="flex-wrap"
               >
-                {DRINKS.map((d) => {
-                  const Icon = DRINK_ICONS[d.icon];
-                  return (
-                    <ToggleGroupItem key={d.id} value={d.id}>
-                      <Icon data-icon="inline-start" />
-                      {d.label}
-                    </ToggleGroupItem>
-                  );
-                })}
+                {DRINKS.map((d) => (
+                  <ToggleGroupItem key={d.id} value={d.id}>
+                    <DrinkIcon drink={d.id} />
+                    {d.label}
+                  </ToggleGroupItem>
+                ))}
               </ToggleGroup>
             </Field>
           </FieldGroup>
