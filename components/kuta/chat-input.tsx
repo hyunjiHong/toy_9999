@@ -14,17 +14,26 @@ export function ChatInput({
   onSend,
   disabled = false,
 }: {
-  onSend: (text: string) => void;
+  onSend: (text: string) => void | Promise<void>;
   disabled?: boolean;
 }) {
   const [text, setText] = useState("");
-  const canSend = text.trim().length > 0 && !disabled;
+  const [sending, setSending] = useState(false);
+  const canSend = text.trim().length > 0 && !disabled && !sending;
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSend) return;
-    onSend(text.trim());
-    setText("");
+    const value = text.trim();
+    setSending(true);
+    try {
+      await onSend(value);
+      setText(""); // 전송 성공 후에만 비운다 (실패 시 입력 유지)
+    } catch {
+      /* 전송 실패 — 입력을 유지해 재시도할 수 있게 둔다 */
+    } finally {
+      setSending(false);
+    }
   }
 
   return (

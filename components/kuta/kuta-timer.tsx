@@ -3,19 +3,19 @@
 import { Clock, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatRemaining, type TimerPhase } from "@/services/session";
+import type { TimerPhase } from "@/types/kuta";
 
 // 진행 중인 커타가 없으면 "커타 시작", 있으면 남은 시간(MM:SS)을 보여준다.
 export function KutaTimer({
-  remaining,
+  label,
   phase,
   onStart,
 }: {
-  remaining: number | null;
+  label: string | null;
   phase: TimerPhase | null;
   onStart: () => void;
 }) {
-  if (remaining === null) {
+  if (label === null) {
     return (
       <Button size="sm" onClick={onStart}>
         <Play className="size-4" aria-hidden /> 커타 시작
@@ -32,7 +32,7 @@ export function KutaTimer({
         phase === "ending-soon" && "text-destructive",
       )}
     >
-      <Clock className="size-4" aria-hidden /> {formatRemaining(remaining)}
+      <Clock className="size-4" aria-hidden /> {label}
     </span>
   );
 }

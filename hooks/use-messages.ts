@@ -52,8 +52,10 @@ export function useMessages(roomId: string): MessagesResult {
   }, [roomId]);
 
   const send = useCallback(
-    (senderName: string, content: string) =>
-      sendMessage(roomId, senderName, content),
+    async (senderName: string, content: string) => {
+      if (!isSupabaseConfigured) return;
+      await sendMessage(roomId, senderName, content);
+    },
     [roomId],
   );
 

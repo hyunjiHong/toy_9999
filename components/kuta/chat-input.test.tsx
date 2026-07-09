@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ChatInput } from "./chat-input";
@@ -19,6 +19,6 @@ describe("ChatInput", () => {
     await user.click(screen.getByRole("button", { name: "보내기" }));
 
     expect(onSend).toHaveBeenCalledWith("점심 뭐 먹음?");
-    expect(input).toHaveValue("");
+    await waitFor(() => expect(input).toHaveValue(""));
   });
 });

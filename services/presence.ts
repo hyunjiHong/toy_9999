@@ -1,4 +1,4 @@
-import type { Participant } from "@/types/kuta";
+import type { Participant, RosterEntry } from "@/types/kuta";
 
 // Supabase Presence가 track하는 payload (Participant + 정렬용 시각)
 export interface PresencePayload extends Participant {
@@ -11,14 +11,19 @@ type PresenceState = Record<
 >;
 
 // channel.presenceState() → 참여자 배열.
-// 입장 순서(joined_at)로 정렬해 아바타가 들어온 순서대로 자리 잡게 한다.
-export function flattenPresence(state: PresenceState): Participant[] {
-  return Object.values(state)
-    .flat()
-    .filter(
-      (e): e is PresencePayload =>
-        typeof e.name === "string" && typeof e.drink === "string",
-    )
+// 바깥 key(=presence key, 탭마다 고유)를 참여자 식별자로 보존한다.
+// joined_at은 ISO-8601이라 문자열 비교(localeCompare)가 곧 시간순 정렬이 된다.
+export function flattenPresence(state: PresenceState): RosterEntry[] {
+  return Object.entries(state)
+    .map(([key, entries]) => {
+      const p = entries.find(
+        (e) => typeof e.name === "string" && typeof e.drink === "string",
+      );
+      return p
+        ? { key, name: p.name!, drink: p.drink!, joined_at: p.joined_at ?? "" }
+        : null;
+    })
+    .filter((e): e is RosterEntry & { joined_at: string } => e !== null)
     .sort((a, b) => a.joined_at.localeCompare(b.joined_at))
-    .map(({ name, drink }) => ({ name, drink }));
+    .map(({ key, name, drink }) => ({ key, name, drink }));
 }

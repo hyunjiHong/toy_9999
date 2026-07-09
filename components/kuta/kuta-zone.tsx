@@ -7,7 +7,7 @@ import { pickQuestion } from "@/config/questions";
 import { usePresence } from "@/hooks/use-presence";
 import { useMessages } from "@/hooks/use-messages";
 import { useKutaTimer } from "@/hooks/use-kuta-timer";
-import type { Participant } from "@/types/kuta";
+import type { Participant, RosterEntry } from "@/types/kuta";
 import { Avatar } from "./avatar";
 import { ChatInput } from "./chat-input";
 import { ChatOverlay } from "./chat-overlay";
@@ -24,9 +24,9 @@ export function KutaZone({
   me: Participant;
   onLeave: () => void;
 }) {
-  const { participants, isFull } = usePresence(roomId, me);
+  const { participants, isFull, meKey } = usePresence(roomId, me);
   const { messages, send } = useMessages(roomId);
-  const { session, remaining, phase, start } = useKutaTimer(roomId);
+  const { session, label, phase, start } = useKutaTimer(roomId);
 
   // FR-9 — 방이 가득 참
   if (isFull) {
@@ -44,21 +44,15 @@ export function KutaZone({
   }
 
   // presence가 아직 비어도(설정 미구성/동기화 전) 최소한 나 자신은 보인다.
-  const people = participants.length > 0 ? participants : [me];
+  const roster: RosterEntry[] =
+    participants.length > 0
+      ? participants
+      : [{ key: meKey, name: me.name, drink: me.drink }];
 
   // FR-7 / SC5 — 0초 도달 시 종료 화면. "다시 참여하기" → 입장 화면(onLeave).
   if (phase === "ended") {
-    return <EndScreen participants={people} onRestart={onLeave} />;
+    return <EndScreen participants={roster} onRestart={onLeave} />;
   }
-
-  let meMarked = false;
-  const markMe = (p: Participant) => {
-    if (!meMarked && p.name === me.name && p.drink === me.drink) {
-      meMarked = true;
-      return true;
-    }
-    return false;
-  };
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -77,12 +71,12 @@ export function KutaZone({
       {/* 상단 바: 타이머/커타 시작 · 인원 · 나가기 (질문 배너는 T6에서 추가) */}
       <div className="mb-4 flex items-center gap-3 rounded-lg border bg-card px-3 py-2">
         <KutaTimer
-          remaining={remaining}
+          label={label}
           phase={phase}
           onStart={() => start(pickQuestion())}
         />
         <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-          <Users className="size-4" aria-hidden /> {people.length} / {MAX_PARTICIPANTS}
+          <Users className="size-4" aria-hidden /> {roster.length} / {MAX_PARTICIPANTS}
         </span>
         <Button variant="outline" size="sm" onClick={onLeave}>
           <LogOut className="size-4" aria-hidden /> 나가기
@@ -99,9 +93,9 @@ export function KutaZone({
           <span className="text-xs text-muted-foreground">큰 커피</span>
         </div>
         <ul className="flex flex-wrap justify-center gap-4">
-          {people.map((p, i) => (
-            <li key={`${p.name}-${i}`}>
-              <Avatar name={p.name} drink={p.drink} isMe={markMe(p)} />
+          {roster.map((p) => (
+            <li key={p.key}>
+              <Avatar name={p.name} drink={p.drink} isMe={p.key === meKey} />
             </li>
           ))}
         </ul>
