@@ -29,7 +29,7 @@ applied: not-yet
 ## 익명+실시간 구조의 RLS 한계 = 링크가 사실상 유일한 경계
 
 **상황**: Step 4, code-reviewer가 rooms/messages/kuta_sessions의 `select using(true)`를 Critical(무필터 조회 → 방 열거·전체 읽기 가능)로 지적.
-**판단**: 계정/세션이 없어(spec §8 "계정 없음, 링크=비밀번호") RLS가 "이 클라이언트가 이 방 소속"임을 식별할 수 없다. Postgres Changes 실시간 수신도 구독자가 row를 SELECT할 수 있어야 동작하므로, anon SELECT를 막으면 실시간 자체가 죽는다. 즉 익명+실시간+방별 프라이버시는 RLS만으로 완전 달성 불가 → 진짜 해결은 auth 도입(MVP 밖). 코스메틱 수정 대신 **한계를 문서화(마이그레이션 주석)하고 사용자에게 accept/defer 결정을 에스컬레이션**하기로. insert엔 char_length 제약을 둬 최소 방어.
+**판단**: 계정/세션이 없어(spec §8 "계정 없음, 링크=비밀번호") RLS가 "이 클라이언트가 이 방 소속"임을 식별할 수 없다. Postgres Changes 실시간 수신도 구독자가 row를 SELECT할 수 있어야 동작하므로, anon SELECT를 막으면 실시간 자체가 죽는다. 즉 익명+실시간+방별 프라이버시는 RLS만으로 완전 달성 불가 → 진짜 해결은 auth 도입(MVP 밖). 코스메틱 수정 대신 **한계를 문서화(마이그레이션 주석)하고 사용자에게 accept/defer 결정을 에스컬레이션**하기로. insert엔 char_length 제약을 둬 최소 방어. → **사용자 결정(Step 5): MVP 이대로 수용.** 완전 프라이버시가 필요해지면 Supabase Auth를 별도 feature로 도입.
 **다시 마주칠 가능성**: 높음 — "실시간 + 로그인 없음" 조합은 흔함. draft-plan 단계에서 프라이버시 요구가 있으면 auth 필요를 먼저 못박아야 함.
 
 ---
