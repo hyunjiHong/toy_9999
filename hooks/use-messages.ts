@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
-import { fetchRecentMessages, sendMessage } from "@/services/messages";
+import { sendMessage } from "@/services/messages";
 import type { Message } from "@/types/kuta";
 
 export interface MessagesResult {
@@ -10,21 +10,14 @@ export interface MessagesResult {
   send: (senderName: string, content: string) => Promise<void>;
 }
 
-// 방의 채팅을 구독한다. insert(전송) → Postgres Changes로 방 전원에게 2초 내 도착(FR-4).
+// 채팅 구독. 채팅은 휘발성(커피 위로 떠오르다 ~5초 뒤 사라짐)이라 히스토리를 불러오지 않고,
+// 구독 이후 실시간으로 도착하는 메시지만 다룬다 → 늦게 들어온 사람은 이후 대화만 본다(FR-4/FR-10).
+// (mount 시각 대신 "구독 이후 도착"을 기준으로 삼아 클라이언트/서버 시계 오차에 영향받지 않는다.)
 export function useMessages(roomId: string): MessagesResult {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
-    let active = true;
-
-    fetchRecentMessages(roomId)
-      .then((recent) => {
-        if (active) setMessages(recent);
-      })
-      .catch(() => {
-        /* 로드 실패해도 실시간 수신은 계속 */
-      });
 
     const channel = supabase
       .channel(`messages:${roomId}`)
@@ -46,7 +39,6 @@ export function useMessages(roomId: string): MessagesResult {
       .subscribe();
 
     return () => {
-      active = false;
       supabase.removeChannel(channel);
     };
   }, [roomId]);

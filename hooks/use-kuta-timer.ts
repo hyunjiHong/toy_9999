@@ -9,6 +9,7 @@ import {
   startOrJoinSession,
   timerPhase,
 } from "@/services/session";
+import { deleteMessagesBefore } from "@/services/messages";
 import type { KutaSession, TimerPhase } from "@/types/kuta";
 
 export interface KutaTimerResult {
@@ -73,6 +74,10 @@ export function useKutaTimer(roomId: string): KutaTimerResult {
       await startOrJoinSession(roomId, question);
       const canonical = await fetchActiveSession(roomId);
       setSession(canonical);
+      // 세션 단위 수명: 이 커타 시작 시각 이전(=이전 세션) 대화를 정리한다.
+      if (canonical) {
+        await deleteMessagesBefore(roomId, canonical.started_at).catch(() => {});
+      }
     },
     [roomId],
   );

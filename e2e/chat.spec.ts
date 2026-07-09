@@ -30,4 +30,22 @@ test.describe("실시간 채팅", () => {
     await ctxA.close();
     await ctxB.close();
   });
+
+  // 휘발성 — 보낸 메시지는 떠오른 뒤 약 5초 후 화면에서 사라진다 (FR-10)
+  test("보낸 메시지는 잠깐 떠올랐다 사라진다", async ({ browser }) => {
+    const roomId = await createTestRoom();
+    const ctx = await browser.newContext();
+    const a = await ctx.newPage();
+    await join(a, roomId, "민지", "라떼");
+
+    await a.getByLabel("채팅 입력").fill("잠깐 떠오르는 메시지");
+    await a.getByRole("button", { name: "보내기" }).click();
+
+    const overlay = a.getByLabel("채팅");
+    await expect(overlay.getByText(/잠깐 떠오르는 메시지/)).toBeVisible({ timeout: 2000 });
+    // 약 5초 뒤 사라짐
+    await expect(overlay.getByText(/잠깐 떠오르는 메시지/)).toBeHidden({ timeout: 7000 });
+
+    await ctx.close();
+  });
 });

@@ -53,7 +53,22 @@ create policy "messages insertable by anyone"
   to anon, authenticated
   with check (char_length(content) between 1 and 500 and char_length(sender_name) between 1 and 40);
 
-alter publication supabase_realtime add table public.messages;
+drop policy if exists "messages deletable by anyone" on public.messages;
+create policy "messages deletable by anyone"
+  on public.messages for delete
+  to anon, authenticated
+  using (true);
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'messages'
+  ) then
+    alter publication supabase_realtime add table public.messages;
+  end if;
+end $$;
 
 -- 0003_kuta_sessions ------------------------------------------
 create table if not exists public.kuta_sessions (
@@ -82,7 +97,16 @@ create policy "sessions insertable by anyone"
   to anon, authenticated
   with check (duration_seconds between 1 and 3600);
 
-alter publication supabase_realtime add table public.kuta_sessions;
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'kuta_sessions'
+  ) then
+    alter publication supabase_realtime add table public.kuta_sessions;
+  end if;
+end $$;
 
 -- seed --------------------------------------------------------
 insert into public.rooms (id, name)

@@ -51,3 +51,23 @@ applied: not-yet
 **상황**: Step 4, kuta-timer가 `@/services/session`에서 TimerPhase/formatRemaining을 import(레이어 위반). 같은 브랜치 question-banner는 이미 회피 주석을 달아 일관성 없음.
 **판단**: 공용 타입(TimerPhase, RosterEntry)을 types/kuta.ts로 올리고, 포맷 문자열(label)은 hook이 내려주게 변경. 컴포넌트는 types만 참조. presence "나" 식별도 name+drink(중복 이름 취약) → presence key 기반으로 교체하며 같이 정리.
 **다시 마주칠 가능성**: 높음 — 편의상 services의 헬퍼/타입을 컴포넌트가 당겨쓰기 쉬움. "공용 타입은 types 레이어" 습관 필요.
+
+---
+category: spec-ambiguity
+applied: not-yet
+---
+## 채팅 수명: 영구 저장 → 커타 세션 단위 (배포 후 사용자 피드백)
+
+**상황**: Step 5/배포 후, 사용자가 "다 나가면 채팅이 삭제돼야 하는 거 아닌가" 지적. 현 구현은 messages 영구 저장이라 다음 방문 시 옛 대화가 그대로 노출 — "잠깐 모였다 흩어지는" 커타 컨셉(idea.md)과 어긋남. spec §6은 "저장"만 정의했고 수명은 미정의였음.
+**판단**: 옵션 3개 제시(세션 기준 초기화 / 완전 휘발 broadcast / 아무도 없으면 삭제). 사용자 선택=세션 기준. "다 나가면 삭제"의 직역(presence 0→삭제)은 마지막 사람 탭 닫힘에 안 걸려 신뢰성 낮음 → 결정론적 경계인 "새 커타 시작"에 정리. 구현: useMessages를 session.started_at으로 필터(전원 뷰 수렴) + 시작 클라이언트가 started_at 이전 메시지 삭제(실데이터 제거). FR-10으로 spec에 추가.
+**다시 마주칠 가능성**: 중간 — "저장 vs 휘발" 수명은 spec에서 빠지기 쉬운 축. write-spec에서 데이터 엔티티마다 수명(retention)을 함께 물으면 예방됨.
+
+---
+category: spec-ambiguity
+applied: not-yet
+---
+## 채팅을 휘발성 떠오르는 오버레이로 (세션 저장 모델 대체)
+
+**상황**: 배포 후 사용자가 "메시지가 아래서 위로 올라가 5초 보이고 사라지게, 커피 주변 불특정 위치에서" 요청. 직전엔 "세션 기준 초기화(저장+필터)"로 갔었음.
+**판단**: 휘발성 floating이면 화면에 지속 표시 자체가 없어 "옛 대화 계속 보임" 문제가 근본 해소됨 → 히스토리 로드/`sinceIso` 필터 제거하고 useMessages는 "구독 이후 도착분"만 다루게 단순화. 처음엔 mount 시각(client Date.now())과 created_at(server) 비교로 히스토리를 걸렀는데, **클라이언트/서버 시계 오차 시 채팅이 통째로 안 뜨는 버그**가 될 수 있어 폐기 → "구독 이후 실시간 도착 = 새 메시지" 기준으로 전환(시계 비교 없음). 저장분 정리(deleteMessagesBefore)는 프라이버시용으로 유지. FR-10을 휘발성으로 갱신.
+**다시 마주칠 가능성**: 높음 — 실시간 UI에서 "클라이언트 시각으로 서버 타임스탬프 필터링"은 흔한 함정. 순서/도착 기준으로 잡아야 안전.

@@ -38,6 +38,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Codex 로컬 도구 설정 (레포에 커밋하지 않음)
+.codex/
+AGENTS.md
+
 
 # vercel
 .vercel
