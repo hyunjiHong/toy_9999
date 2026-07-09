@@ -26,5 +26,14 @@ create policy "sessions insertable by anyone"
   to anon, authenticated
   with check (duration_seconds between 1 and 3600);
 
--- 세션 시작/종료를 방 전원에게 실시간 전파
-alter publication supabase_realtime add table public.kuta_sessions;
+-- 세션 시작/종료를 방 전원에게 실시간 전파 (이미 있으면 건너뜀 — 재실행 안전)
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'kuta_sessions'
+  ) then
+    alter publication supabase_realtime add table public.kuta_sessions;
+  end if;
+end $$;
