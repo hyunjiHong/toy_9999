@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { MAX_PARTICIPANTS } from "@/config/room";
 import { usePresence } from "@/hooks/use-presence";
 import { useMessages } from "@/hooks/use-messages";
+import { useKutaTimer } from "@/hooks/use-kuta-timer";
 import type { Participant } from "@/types/kuta";
 import { Avatar } from "./avatar";
 import { ChatInput } from "./chat-input";
 import { ChatOverlay } from "./chat-overlay";
+import { KutaTimer } from "./kuta-timer";
 
 export function KutaZone({
   roomId,
@@ -21,6 +23,7 @@ export function KutaZone({
 }) {
   const { participants, isFull } = usePresence(roomId, me);
   const { messages, send } = useMessages(roomId);
+  const { remaining, phase, start } = useKutaTimer(roomId);
 
   // FR-9 — 방이 가득 참
   if (isFull) {
@@ -52,9 +55,10 @@ export function KutaZone({
     <div className="mx-auto max-w-5xl">
       <h1 className="sr-only">커타 존</h1>
 
-      {/* 상단 바: 인원 / 나가기 (타이머·질문은 T5/T6에서 추가) */}
-      <div className="mb-4 flex items-center justify-between rounded-lg border bg-card px-3 py-2">
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+      {/* 상단 바: 타이머/커타 시작 · 인원 · 나가기 (질문 배너는 T6에서 추가) */}
+      <div className="mb-4 flex items-center gap-3 rounded-lg border bg-card px-3 py-2">
+        <KutaTimer remaining={remaining} phase={phase} onStart={() => start()} />
+        <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
           <Users className="size-4" aria-hidden /> {people.length} / {MAX_PARTICIPANTS}
         </span>
         <Button variant="outline" size="sm" onClick={onLeave}>
