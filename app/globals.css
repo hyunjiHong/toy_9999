@@ -124,3 +124,14 @@
     @apply bg-background text-foreground;
   }
 }
+/* 커타 채팅: 새 메시지가 아래에서 위로 떠오르는 애니메이션 */
+@keyframes kuta-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

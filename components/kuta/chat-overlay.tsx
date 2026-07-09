@@ -18,7 +18,7 @@ export function ChatOverlay({ messages }: { messages: Message[] }) {
         <p
           key={m.id}
           className={cn(
-            "text-sm [text-shadow:0_0_2px_var(--background),0_0_3px_var(--background)]",
+            "text-sm transition-opacity duration-500 [text-shadow:0_0_2px_var(--background),0_0_3px_var(--background)] [animation:kuta-rise_0.35s_ease-out]",
             // 오래된(위쪽) 메시지는 옅어지며 사라지는 느낌
             i < recent.length - 2 && "opacity-45",
           )}
